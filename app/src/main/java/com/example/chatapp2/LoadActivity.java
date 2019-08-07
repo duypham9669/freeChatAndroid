@@ -38,10 +38,9 @@ public class LoadActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if(task.isSuccessful()){
 //                                Toast.makeText(LoginActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
-
-
-                                                Intent intent = new Intent(LoadActivity.this, MainActivity.class);
-                                                startActivity(intent);
+                                    Intent intent = new Intent(LoadActivity.this, MainActivity.class);
+                                    startActivity(intent);
+                                    finish();
 
 
                                 }else{
