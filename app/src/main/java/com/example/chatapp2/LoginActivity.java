@@ -79,7 +79,7 @@ public class LoginActivity extends Activity {
                         if(task.isSuccessful()){
                             Toast.makeText(LoginActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            startActivity(intent);
+
                             if(checkBox.isChecked()){
                                 SharedPreferences.Editor editor=sharedPreferences.edit();
                                 editor.putString("taikhoan", editTextsdt.getText().toString());
@@ -93,6 +93,8 @@ public class LoginActivity extends Activity {
                                 editor.remove("cheked");
 
                             }
+                            startActivity(intent);
+                            finish();
                         }else{
                             Toast.makeText(LoginActivity.this, "Lỗi", Toast.LENGTH_SHORT).show();
 
