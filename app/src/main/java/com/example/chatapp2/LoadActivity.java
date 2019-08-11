@@ -32,6 +32,7 @@ public class LoadActivity extends AppCompatActivity {
                 Intent intent = new Intent(LoadActivity.this, LoginActivity.class);
                 startActivity(intent);
             }else{
+
                 mAuth.signInWithEmailAndPassword(checkemail, checkpass)
                         .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                             @Override

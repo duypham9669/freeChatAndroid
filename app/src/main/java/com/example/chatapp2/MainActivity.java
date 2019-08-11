@@ -45,20 +45,18 @@ public class MainActivity extends Activity {
         anhxa();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
-            // User đã đăng nhập, lấy các thông tin
             name = user.getDisplayName();
             email = user.getEmail();
-//            Uri photoUrl = user.getPhotoUrl();
             boolean emailVerified = user.isEmailVerified();
         } else {
-            // User đã đăng xuất, hoặc chưa có ai đăng nhập
+
 
         }
         //doc data=================
         adapter=new ArrayAdapter<>(this,android.R.layout.simple_list_item_1);
         listView.setAdapter(adapter);
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        //Kết nối tới node có tên là contacts (node này do ta định nghĩa trong CSDL Firebase)
+        //Kết nối tới node có tên là message
         myRef = database.getReference("message");
 
         myRef.addValueEventListener(new ValueEventListener() {
@@ -91,6 +89,7 @@ public class MainActivity extends Activity {
                 editTexttext.setText("");
                         }
         });
+
     }
     private void anhxa(){
         editTexttext=(EditText) findViewById(R.id.editTexttext);

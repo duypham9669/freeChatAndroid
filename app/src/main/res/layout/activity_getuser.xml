@@ -5,13 +5,63 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".GetuserActivity"
+    android:orientation="vertical"
+    android:background="@drawable/nen"
     >
-    <TextView
+    <EditText
+        android:layout_marginTop="40dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="size"
-        android:textSize="30dp"
-        android:id="@+id/testname"
+        android:background="@drawable/bovientextview"
+        android:id="@+id/namenode"
+        android:text="name node"
+        android:textSize="30sp"
         />
 
+
+    <Button
+        android:id="@+id/btn_gui"
+        android:layout_marginTop="30dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="gửi node"
+        android:layout_gravity="center"
+        />
+
+
+    <EditText
+        android:layout_marginTop="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="tim tai khoan"
+        android:textSize="30dp"
+        android:id="@+id/editTextTimtaikhoan"
+        android:background="@drawable/bovientextview"
+        />
+    <Button
+        android:id="@+id/btn_timtaikhoan"
+        android:layout_marginTop="30dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="tim tai khoan"
+        android:layout_gravity="center"
+        />
+    <TextView
+        android:layout_marginTop="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="tim tai khoan"
+        android:textSize="30dp"
+        android:id="@+id/showemail"
+        android:background="@drawable/bovientextview"
+        />
+    <TextView
+        android:layout_marginTop="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="tim tai khoan"
+        android:textSize="30dp"
+        android:id="@+id/showname"
+        android:background="@drawable/bovientextview"
+        />
 </LinearLayout>

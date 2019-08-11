@@ -21,6 +21,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import static android.content.ContentValues.TAG;
 
@@ -30,6 +32,7 @@ public class DangkyActivity extends Activity {
             textViewname;
     private Button btn_dangky;
     private FirebaseAuth mAuth;
+    private DatabaseReference myRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +40,9 @@ public class DangkyActivity extends Activity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_dangky);
         anhxa();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        myRef = database.getReference("user");
+
         mAuth = FirebaseAuth.getInstance();
 //        FirebaseUser currentUser = mAuth.getCurrentUser();
         linkdangnhap.setOnClickListener(new View.OnClickListener() {
@@ -87,9 +93,9 @@ public class DangkyActivity extends Activity {
         });
     }
     private void pushdangky(){
-        String email=textViewemail.getText().toString();
+        final String email=textViewemail.getText().toString();
         String password=textViewmatkhau.getText().toString();
-
+        final String name=textViewname.getText().toString();
 
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -100,12 +106,19 @@ public class DangkyActivity extends Activity {
                             Toast.makeText(DangkyActivity.this, "Tài khoản đã tồn tại",  Toast.LENGTH_SHORT).show();
                         }
                         if (task.isSuccessful()) {
+                            try {
+                                SenDataUser();
+                            }catch (Exception ex){
+                                System.out.println(ex);
+                            }
+
                             // Sign in success, update UI with the signed-in user's information
                             Toast.makeText(DangkyActivity.this, "Thành công, mời đăng nhập", Toast.LENGTH_SHORT).show();
                             settext("Đăng ký thành công, mời đăng nhập");
 
 //                            FirebaseUser user = mAuth.getCurrentUser();
                             setnameuser();
+
                         }
 
                         else {
@@ -133,4 +146,11 @@ public class DangkyActivity extends Activity {
                     }
                 });
     }
+    private void SenDataUser(){
+        String email2=textViewemail.getText().toString();
+        String name2=textViewname.getText().toString();
+        DataUser user=new DataUser("test", "test name");
+        myRef.child("test mail2").setValue(user);
+    }
+
 }
