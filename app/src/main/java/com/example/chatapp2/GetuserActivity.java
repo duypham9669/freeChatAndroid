@@ -5,11 +5,16 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,9 +36,10 @@ import com.google.firebase.database.ValueEventListener;
 public class GetuserActivity extends AppCompatActivity {
     private TextView showname, showemail;
     private Button btn_gui, btn_timtaikhoan;
-    private EditText editTextTimtaikhoan, namenode;
+    private EditText editTextTimtaikhoan, namenode, txtname;
     private DatabaseReference myRef;
     private String TAG;
+    private Dialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,8 +63,16 @@ public class GetuserActivity extends AppCompatActivity {
         btn_timtaikhoan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getdatauser();
+                alertDialog();
 
+
+            }
+        });
+        btn_gui.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+//                testdialog();
+                getdatauser();
             }
         });
     }
@@ -69,18 +83,19 @@ public class GetuserActivity extends AppCompatActivity {
         myRef = database.getReference("user");
 
 //        myRef.push().child("test 2 tầng").setValue(pe);
+        String key="abc";
         String email="test email";
         String name="test name";
-        DataUser user=new DataUser(email, name);
+        DataUser user=new DataUser(key, email, name);
         myRef.child(email).setValue(user);
         Toast.makeText(this, "da gui", Toast.LENGTH_SHORT).show();
 
     }
-    private void writeNewUser(String userId, String name, String email) {
-
-        DataUser user = new DataUser(name, email);
-        myRef.child("users").child(userId).setValue(user);
-    }
+//    private void writeNewUser(String userId, String name, String email) {
+//
+//        DataUser user = new DataUser(name, email);
+//        myRef.child("users").child(userId).setValue(user);
+//    }
 
     private void getdatauser(){
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -118,5 +133,46 @@ public class GetuserActivity extends AppCompatActivity {
         });
     }
 
+    private void testdialog(){
+        dialog = new Dialog(GetuserActivity.this);
+        dialog.setTitle("test dialog");
+        dialog.setContentView(R.layout.timbanbe);
+        dialog.show();
+    }
 
-}
+    public void alertDialog(){
+        AlertDialog.Builder alertDialog=new AlertDialog.Builder(this);
+        LayoutInflater inflater = GetuserActivity.this.getLayoutInflater();
+        View mView = inflater.inflate(R.layout.timbanbe, null);
+        txtname=(EditText) mView.findViewById(R.id.txtusername);
+
+        alertDialog.setTitle("tim ban be");
+        alertDialog.setView(mView);
+        alertDialog.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                try{
+                    test( txtname.getText().toString());
+                }catch (Exception ex){
+                    System.out.println("AAA"+ex);
+                }
+
+            }
+        });
+        alertDialog.setPositiveButton("cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        alertDialog.create();
+        alertDialog.show();
+    }
+
+    final void test(String x){
+        showname.setText(x);
+    }
+    }
+
+
+

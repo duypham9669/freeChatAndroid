@@ -1,8 +1,9 @@
 package com.example.chatapp2;
 
 public class DataUser {
-    public String email, name;
-    public DataUser(String email, String name){
+    public String key, email, name;
+    public DataUser(String key,String email, String name){
+        this.key=key;
         this.email=email;
         this.name=name;
     }
@@ -16,4 +17,5 @@ public class DataUser {
     public String getEmail() {
         return email;
     }
+    public  String getKey(){return key;}
 }

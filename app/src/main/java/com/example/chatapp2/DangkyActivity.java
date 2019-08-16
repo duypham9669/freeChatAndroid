@@ -107,9 +107,10 @@ public class DangkyActivity extends Activity {
                         }
                         if (task.isSuccessful()) {
                             try {
-                                SenDataUser();
-                            }catch (Exception ex){
-                                System.out.println(ex);
+                                SenDataUser(email, name);
+                            } catch (Exception ex) {
+                                Toast.makeText(DangkyActivity.this, "Lỗi", Toast.LENGTH_SHORT).show();
+                                System.out.println("AAA"+ex);
                             }
 
                             // Sign in success, update UI with the signed-in user's information
@@ -146,11 +147,10 @@ public class DangkyActivity extends Activity {
                     }
                 });
     }
-    private void SenDataUser(){
-        String email2=textViewemail.getText().toString();
-        String name2=textViewname.getText().toString();
-        DataUser user=new DataUser("test", "test name");
-        myRef.child("test mail2").setValue(user);
+    private void SenDataUser(String email, String name){
+        String key = myRef.push().getKey();
+        DataUser user=new DataUser(key,email, name);
+        myRef.child(key).setValue(user);
     }
 
 }
