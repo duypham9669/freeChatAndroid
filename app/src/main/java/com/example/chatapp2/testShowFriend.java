@@ -1,12 +1,16 @@
 package com.example.chatapp2;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -21,56 +25,58 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+
 import static android.content.ContentValues.TAG;
 
 public class testShowFriend extends AppCompatActivity {
-    private Button btn_showFriend;
-    private ListView listViewFriend;
-    ArrayAdapter<String> adapter;
-    private DatabaseReference Database;
-    private DatabaseReference myRef;
-    private TextView link;
+     DatabaseReference myRef, myRef2;
+    ListView listView;
+    ArrayList<String> nameArray = new ArrayList<>();
+    ArrayList<String> listKey = new ArrayList<>();
+
+    //    String[] nameArray = {"Octopus","Pig","Sheep","Rabbit","Snake","Spider" };
+    ArrayList<String> infoArray = new ArrayList<>();
+
+//    String[] infoArray = {
+//            "8 tentacled monster",
+//            "Delicious in rolls",
+//            "Great for jumpers",
+//            "Nice in a stew",
+//            "Great for shoes",
+//            "Scary."
+//    };
+
+    Integer[] imageArray = {R.drawable.user,
+            R.drawable.user
+            };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test_show_friend);
-        anhxa();
-        showmain();
-        link.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                link.setTextColor(Color.GREEN);
-                Toast.makeText(testShowFriend.this, "Đăng ký tài khoản", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-    }
-    private void anhxa(){
-        btn_showFriend=(Button)findViewById(R.id.btn_showFriend);
-        listViewFriend=(ListView)findViewById(R.id.listViewFriend);
-    }
-    private void showmain(){
-        adapter=new ArrayAdapter<>(this,android.R.layout.simple_list_item_1);
-        listViewFriend.setAdapter(adapter);
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        //Kết nối tới node có tên là message
+        myRef2 = database.getReference("user");
         myRef = database.getReference("friend");
+        queryFriend();
+    }
+    private void queryFriend(){
         Query friend = myRef.child("-LmKl_MZy97jB8YFSjl8");
-
         friend.addValueEventListener(new ValueEventListener() {
+
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
                 //vòng lặp để lấy dữ liệu khi có sự thay đổi trên Firebase
                 for (DataSnapshot data: dataSnapshot.getChildren())
                 {
                     //lấy key của dữ liệu
                     String key=data.getKey();
                     //lấy giá trị của key (nội dung)
-                    String value=data.getValue().toString();
+                    String value= (String) data.getValue();
 
-                    adapter.add(value+"\n");
-                    adapter.add(String.valueOf(link));
+                    System.out.println("AAA"+value);
+                    convertName(value);
+                    listKey.add(value);
+
                 }
             }
             @Override
@@ -78,6 +84,56 @@ public class testShowFriend extends AppCompatActivity {
                 Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
             }
         });
+
+    }
+    public void showdatafriend(){
+        CustomListAdapter whatever = new CustomListAdapter(this, nameArray, infoArray, imageArray);
+        listView = (ListView) findViewById(R.id.listViewFriend);
+        listView.setAdapter(whatever);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position,
+                                    long id) {
+                Intent intent = new Intent(testShowFriend.this, DetailActivity.class);
+                String message = nameArray.get(position);
+                intent.putExtra("animal", message);
+                startActivity(intent);
+            }
+        });
+    }
+    private void convertName(String key2){
+
+            Query findname = myRef2.orderByChild("key").equalTo(key2);
+            findname.addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
+                    DataUser user = dataSnapshot.getValue(DataUser.class);
+                    String name = user.getName();
+                    nameArray.add(name);
+                    infoArray.add("test");
+                    System.out.println("AAA"+name);
+                    showdatafriend();
+                }
+                @Override
+                public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                }
+
+                @Override
+                public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+                }
+
+                @Override
+                public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+        }
     }
 
-}

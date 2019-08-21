@@ -195,6 +195,7 @@ public class frag2 extends Fragment {
                 String c=newPost.key;
                 // chọn đến node friend
                 DatabaseReference refFriend = database.getReference("friend");
+                // push len 2 node cua user+friend
                 refFriend.child(c).push().setValue(keyfriend);
                 refFriend.child(keyfriend).push().setValue(c);
             }
