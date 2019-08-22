@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import static android.content.ContentValues.TAG;
 
 public class testShowFriend extends AppCompatActivity {
+    private Button btn_reload;
     DatabaseReference myRef, myRef2;
     ListView listView;
     ArrayList<String> nameArray = new ArrayList<>();
@@ -48,7 +49,15 @@ public class testShowFriend extends AppCompatActivity {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         myRef2 = database.getReference("user");
         myRef = database.getReference("friend");
-        queryFriend();
+        btn_reload=(Button) findViewById(R.id.btn_reload);
+        btn_reload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = getIntent();
+                finish();
+                startActivity(intent);
+            }
+        });
     }
     private void queryFriend(){
         Query friend = myRef.child("-LmKl_MZy97jB8YFSjl8");

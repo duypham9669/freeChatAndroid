@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -33,31 +34,36 @@ import java.util.ArrayList;
 
 import static android.content.ContentValues.TAG;
 
-public class frag2 extends Fragment {
+public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private Button btn_themban;
     private View view;
     private EditText txtname;
     private TextView viewname, viewemail;
     private FirebaseAuth mAuth;
-
+    private String myemail="";
+    private String mykey="";
     DatabaseReference myRef, myRef2;
     private ListView listView;
-    ArrayList<String> nameArray = new ArrayList<>();
-    ArrayList<String> listKey = new ArrayList<>();
+    private ArrayList<String> nameArray = new ArrayList<>();
+    private ArrayList<String> listKey = new ArrayList<>();
 
     //    String[] nameArray = {"Octopus","Pig","Sheep","Rabbit","Snake","Spider" };
-    ArrayList<String> infoArray = new ArrayList<>();
+    private ArrayList<String> infoArray = new ArrayList<>();
 
     Integer[] imageArray = {R.drawable.user,
             R.drawable.user
     };
 
+    private SwipeRefreshLayout swipeRefreshLayout;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         this.view =inflater.inflate(R.layout.fragment2, container, false);
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.reset);
+        swipeRefreshLayout.setOnRefreshListener(this);
 
-            btn_themban=(Button)view.findViewById(R.id.btn_thembann);
+        btn_themban=(Button)view.findViewById(R.id.btn_thembann);
 
         btn_themban.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,8 +75,45 @@ public class frag2 extends Fragment {
         myRef2 = database.getReference("user");
         myRef = database.getReference("friend");
         mAuth = FirebaseAuth.getInstance();
-        queryFriend();
+        getMyEmail();
+
         return view;
+    }
+    private void getMyEmail(){
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            myemail = user.getEmail();
+        }
+        final Query getkey = myRef2.orderByChild("email").equalTo(myemail);
+        getkey.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
+                DataUser user = dataSnapshot.getValue(DataUser.class);
+
+                queryFriend(user.getKey());
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
     private void alertDialog(){
         AlertDialog.Builder alertDialog=new AlertDialog.Builder(getActivity());
@@ -213,13 +256,15 @@ public class frag2 extends Fragment {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
                 DataUser newPost = dataSnapshot.getValue(DataUser.class);
-
                 String c=newPost.key;
                 // chọn đến node friend
                 DatabaseReference refFriend = database.getReference("friend");
                 // push len 2 node cua user+friend
+
                 refFriend.child(c).push().setValue(keyfriend);
                 refFriend.child(keyfriend).push().setValue(c);
+                cleardata();
+                reload();
             }
 
             @Override
@@ -239,12 +284,12 @@ public class frag2 extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
             }
         });
     }
-    private void queryFriend(){
-        Query friend = myRef.child("-LmKl_MZy97jB8YFSjl8");
+
+    private void queryFriend(String key){
+        Query friend = myRef.child(key);
         friend.addValueEventListener(new ValueEventListener() {
 
             @Override
@@ -255,8 +300,7 @@ public class frag2 extends Fragment {
                     //lấy key của dữ liệu
                     String key=data.getKey();
                     //lấy giá trị của key (nội dung)
-                    String value= (String) data.getValue();
-
+                    String value=(String)data.getValue();
                     System.out.println("AAA"+value);
                     convertName(value);
                     listKey.add(value);
@@ -280,7 +324,7 @@ public class frag2 extends Fragment {
                                     long id) {
                 Intent intent = new Intent(getActivity(), DetailActivity.class);
                 String message = nameArray.get(position);
-                intent.putExtra("animal", message);
+                intent.putExtra("email", message);
                 startActivity(intent);
             }
         });
@@ -300,24 +344,39 @@ public class frag2 extends Fragment {
             }
             @Override
             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
             }
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
             }
 
             @Override
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
             }
         });
     }
 
+    private void reload() {
+            Intent intent = getActivity().getIntent();
+            startActivity(intent);
+    }
+    private void cleardata(){
+        listKey.clear();
+        nameArray.clear();
+    }
+
+    public void onRefresh(){
+        swipeRefreshLayout.setRefreshing(true);
+        refreshList();
+    }
+    private void refreshList(){
+        //do processing to get new data and set your listview's adapter, maybe  reinitialise the loaders you may be using or so
+        //when your data has finished loading, cset the refresh state of the view to false
+        swipeRefreshLayout.setRefreshing(false);
+
+    }
 }

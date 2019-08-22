@@ -149,6 +149,7 @@ public class DangkyActivity extends Activity {
     }
     private void SenDataUser(String email, String name){
         String key = myRef.push().getKey();
+
         DataUser user=new DataUser(key,email, name);
         myRef.child(key).setValue(user);
     }
