@@ -1,17 +1,22 @@
 package com.example.chatapp2;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -24,22 +29,36 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+
+import static android.content.ContentValues.TAG;
+
 public class frag2 extends Fragment {
     private Button btn_themban;
     private View view;
     private EditText txtname;
     private TextView viewname, viewemail;
     private FirebaseAuth mAuth;
-    private DatabaseReference myRef;
+
+    DatabaseReference myRef, myRef2;
+    private ListView listView;
+    ArrayList<String> nameArray = new ArrayList<>();
+    ArrayList<String> listKey = new ArrayList<>();
+
+    //    String[] nameArray = {"Octopus","Pig","Sheep","Rabbit","Snake","Spider" };
+    ArrayList<String> infoArray = new ArrayList<>();
+
+    Integer[] imageArray = {R.drawable.user,
+            R.drawable.user
+    };
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         this.view =inflater.inflate(R.layout.fragment2, container, false);
-        try{
+
             btn_themban=(Button)view.findViewById(R.id.btn_thembann);
-        }catch (Exception ex){
-            System.out.println("AAA"+ex);
-        }
+
         btn_themban.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -47,8 +66,10 @@ public class frag2 extends Fragment {
             }
         });
         FirebaseDatabase database = FirebaseDatabase.getInstance();
+        myRef2 = database.getReference("user");
         myRef = database.getReference("friend");
         mAuth = FirebaseAuth.getInstance();
+        queryFriend();
         return view;
     }
     private void alertDialog(){
@@ -84,16 +105,17 @@ public class frag2 extends Fragment {
         email.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                DataUser newPost = dataSnapshot.getValue(DataUser.class);
                 System.out.println("AAA ok");
-                    try{
-                        findfinish(email);
-                    }catch (Exception ex){
-                        alert("loi");
-                    }
+                if(dataSnapshot.getValue()==null){
+                    alert("Không tìm thấy");
+                }else{
+                    findfinish(email);
+                }
             }
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onCancelled(DatabaseError databaseError)
+            {
+                System.out.println("AAA Loi");
                 alert("AAA Loi");
             }
         });
@@ -221,7 +243,81 @@ public class frag2 extends Fragment {
             }
         });
     }
-    private void showListFriend(){
+    private void queryFriend(){
+        Query friend = myRef.child("-LmKl_MZy97jB8YFSjl8");
+        friend.addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                //vòng lặp để lấy dữ liệu khi có sự thay đổi trên Firebase
+                for (DataSnapshot data: dataSnapshot.getChildren())
+                {
+                    //lấy key của dữ liệu
+                    String key=data.getKey();
+                    //lấy giá trị của key (nội dung)
+                    String value= (String) data.getValue();
+
+                    System.out.println("AAA"+value);
+                    convertName(value);
+                    listKey.add(value);
+
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
+            }
+        });
 
     }
+    private void showdatafriend(){
+        CustomListAdapter whatever = new CustomListAdapter(getActivity(), nameArray, infoArray, imageArray);
+        listView = (ListView)view.findViewById(R.id.listViewFriend);
+        listView.setAdapter(whatever);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position,
+                                    long id) {
+                Intent intent = new Intent(getActivity(), DetailActivity.class);
+                String message = nameArray.get(position);
+                intent.putExtra("animal", message);
+                startActivity(intent);
+            }
+        });
+    }
+    private void convertName(String key2){
+
+        Query findname = myRef2.orderByChild("key").equalTo(key2);
+        findname.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
+                DataUser user = dataSnapshot.getValue(DataUser.class);
+                String name = user.getName();
+                nameArray.add(name);
+                infoArray.add("test");
+                System.out.println("AAA"+name);
+                showdatafriend();
+            }
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
 }

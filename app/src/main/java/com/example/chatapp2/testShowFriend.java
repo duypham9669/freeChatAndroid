@@ -30,22 +30,13 @@ import java.util.ArrayList;
 import static android.content.ContentValues.TAG;
 
 public class testShowFriend extends AppCompatActivity {
-     DatabaseReference myRef, myRef2;
+    DatabaseReference myRef, myRef2;
     ListView listView;
     ArrayList<String> nameArray = new ArrayList<>();
     ArrayList<String> listKey = new ArrayList<>();
 
     //    String[] nameArray = {"Octopus","Pig","Sheep","Rabbit","Snake","Spider" };
     ArrayList<String> infoArray = new ArrayList<>();
-
-//    String[] infoArray = {
-//            "8 tentacled monster",
-//            "Delicious in rolls",
-//            "Great for jumpers",
-//            "Nice in a stew",
-//            "Great for shoes",
-//            "Scary."
-//    };
 
     Integer[] imageArray = {R.drawable.user,
             R.drawable.user

@@ -33,6 +33,15 @@ public class CustomListAdapter extends ArrayAdapter {
         this.infoArray = infoArrayParam;
 
     }
+
+//    public CustomListAdapter(frag2 frag2, ArrayList<String> nameArrayParam, ArrayList<String> infoArrayParam, Integer[] imageIDArrayParam){
+//        super(frag2,R.layout.listview_row , nameArrayParam);
+//        this.context=context;
+//        this.imageIDarray = imageIDArrayParam;
+//        this.nameArray = nameArrayParam;
+//        this.infoArray = infoArrayParam;
+//    }
+
     public View getView(int position, View view, ViewGroup parent) {
         LayoutInflater inflater=context.getLayoutInflater();
         View rowView=inflater.inflate(R.layout.listview_row, null,true);
