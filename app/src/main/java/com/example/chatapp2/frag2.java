@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -44,10 +45,10 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
     private String mykey="";
     DatabaseReference myRef, myRef2;
     private ListView listView;
+    FirebaseDatabase database;
     private ArrayList<String> nameArray = new ArrayList<>();
+    private ArrayList<String> emailArray=new ArrayList<>();
     private ArrayList<String> listKey = new ArrayList<>();
-
-    //    String[] nameArray = {"Octopus","Pig","Sheep","Rabbit","Snake","Spider" };
     private ArrayList<String> infoArray = new ArrayList<>();
 
     Integer[] imageArray = {R.drawable.user,
@@ -71,7 +72,7 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
                 alertDialog();
             }
         });
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        database = FirebaseDatabase.getInstance();
         myRef2 = database.getReference("user");
         myRef = database.getReference("friend");
         mAuth = FirebaseAuth.getInstance();
@@ -210,7 +211,8 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
         alertDialog.setNeutralButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                addfiend(email, key);
+                checkfriend(email, key);
+
             }
         });
         alertDialog.setPositiveButton("cancel", new DialogInterface.OnClickListener() {
@@ -241,17 +243,16 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
         alertDialog.create();
         alertDialog.show();
     }
-    private void addfiend(String emailFiend, final String keyfriend){
+    private void addfriend(final String keyfriend){
         String myemail="";
-
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             myemail = user.getEmail();
+        }else{
+            alert("Có lỗi");
         }
-        final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference ref = database.getReference("user");
 
-        final Query email = ref.orderByChild("email").equalTo(myemail);
+        final Query email = myRef2.orderByChild("email").equalTo(myemail);
         email.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
@@ -330,13 +331,14 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
         });
     }
     private void convertName(String key2){
-
         Query findname = myRef2.orderByChild("key").equalTo(key2);
         findname.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
                 DataUser user = dataSnapshot.getValue(DataUser.class);
                 String name = user.getName();
+                String emailfriend=user.getEmail();
+                emailArray.add(emailfriend);
                 nameArray.add(name);
                 infoArray.add("test");
                 System.out.println("AAA"+name);
@@ -358,6 +360,7 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         });
+        showlistfriend();
     }
 
     private void reload() {
@@ -367,6 +370,7 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
     private void cleardata(){
         listKey.clear();
         nameArray.clear();
+        emailArray.clear();
     }
 
     public void onRefresh(){
@@ -377,6 +381,33 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
         //do processing to get new data and set your listview's adapter, maybe  reinitialise the loaders you may be using or so
         //when your data has finished loading, cset the refresh state of the view to false
         swipeRefreshLayout.setRefreshing(false);
-
+    }
+    private void showlistfriend(){
+        for (String x:nameArray) {
+            System.out.println("AAA fiend"+x);
+        }
+    }
+    private void checkfriend(String email, String key){
+        String myemail="";
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            myemail = user.getEmail();
+        }else{
+            alert("Có lỗi");
+        }
+        int i=0;
+        for (String x:emailArray) {
+            if(email.equals(x)){
+                i++;
+            }
+        }
+        if(i==0){
+            alert("Đã có trong danh sách bạn bè");
+        }
+        else if(email.equals(myemail)){
+            Toast.makeText(getActivity(), "Không thể tự kết bạn với bản thân", Toast.LENGTH_SHORT).show();
+        }else{
+            addfriend(key);
+        }
     }
 }

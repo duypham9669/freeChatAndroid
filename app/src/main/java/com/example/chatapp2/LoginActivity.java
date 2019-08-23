@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.Window;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import android.os.Bundle;
 import android.widget.Button;
@@ -20,14 +21,23 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 public class LoginActivity extends Activity {
     private TextView link;
     private Button btndangnhap;
     private EditText editTextsdt, editTextmatkhau;
     private FirebaseAuth mAuth;
-    SharedPreferences sharedPreferences;
+    private SharedPreferences sharedPreferences, datauser;
     private CheckBox checkBox;
+    private DatabaseReference myRef, reffriend;
+    private FirebaseDatabase database;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,6 +113,95 @@ public class LoginActivity extends Activity {
                 });
 
     }
-
+//    private void getdatauser(){
+//        String email=editTextsdt.getText().toString();
+//        database=FirebaseDatabase.getInstance();
+//        myRef=database.getReference("user");
+//        Query friend = myRef.orderByChild("email").equalTo(email);
+//        friend.addChildEventListener(new ChildEventListener() {
+//            @Override
+//            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
+//                DataUser user = dataSnapshot.getValue(DataUser.class);
+//
+//                listfriend(user.getKey());
+//            }
+//
+//            @Override
+//            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+//
+//            }
+//
+//            @Override
+//            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+//
+//            }
+//
+//            @Override
+//            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+//    }
+//    private void listfriend(String keyuser){
+//        String fr;
+//        reffriend=database.getReference("friend");
+//        Query lisfriend=reffriend.orderByChild(keyuser);
+//        lisfriend.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//
+//                for(DataSnapshot data: dataSnapshot.getChildren()){
+//                    String value=(String)data.getValue();
+//
+//                }
+//            }
+//            @Override
+//            public void onCancelled(DatabaseError databaseError)
+//            {
+//                System.out.println("AAA Loi");
+//
+//            }
+//        });
+//    }
+//    private void convertemail(String x){
+//
+//        database=FirebaseDatabase.getInstance();
+//        myRef=database.getReference("user");
+//        Query friend = myRef.orderByChild("key").equalTo(x);
+//        friend.addChildEventListener(new ChildEventListener() {
+//            @Override
+//            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
+//                DataUser user = dataSnapshot.getValue(DataUser.class);
+//                SharedPreferences.Editor editor=datauser.edit();
+//                String email=user.getEmail();
+//                editor.putString("friend",email);
+//            }
+//
+//            @Override
+//            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+//
+//            }
+//
+//            @Override
+//            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+//
+//            }
+//
+//            @Override
+//            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+//    }
 
 }
