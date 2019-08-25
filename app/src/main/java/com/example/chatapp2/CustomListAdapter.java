@@ -45,16 +45,16 @@ public class CustomListAdapter extends ArrayAdapter {
     public View getView(int position, View view, ViewGroup parent) {
         LayoutInflater inflater=context.getLayoutInflater();
         View rowView=inflater.inflate(R.layout.listview_row, null,true);
-
         //this code gets references to objects in the listview_row.xml file
         TextView nameTextField = (TextView) rowView.findViewById(R.id.nameTextViewID);
         TextView infoTextField = (TextView) rowView.findViewById(R.id.infoTextViewID);
-        ImageView imageView = (ImageView) rowView.findViewById(R.id.imageViewID);
-
         //this code sets the values of the objects to values from the arrays
         nameTextField.setText(nameArray.get(position));
         infoTextField.setText(infoArray.get(position));
         return rowView;
-
+    }
+    private void cleardata(){
+        nameArray.clear();
+        infoArray.clear();
     }
 }

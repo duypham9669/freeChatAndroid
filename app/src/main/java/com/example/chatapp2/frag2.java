@@ -35,7 +35,7 @@ import java.util.ArrayList;
 
 import static android.content.ContentValues.TAG;
 
-public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+public class frag2 extends Fragment{
     private Button btn_themban;
     private View view;
     private EditText txtname;
@@ -43,17 +43,18 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
     private FirebaseAuth mAuth;
     private String myemail="";
     private String mykey="";
-    DatabaseReference myRef, myRef2;
+    DatabaseReference reffriend, refuser;
     private ListView listView;
     FirebaseDatabase database;
     private ArrayList<String> nameArray = new ArrayList<>();
     private ArrayList<String> emailArray=new ArrayList<>();
     private ArrayList<String> listKey = new ArrayList<>();
     private ArrayList<String> infoArray = new ArrayList<>();
-
-    Integer[] imageArray = {R.drawable.user,
+    private Integer[] imageArray = {R.drawable.user,
             R.drawable.user
     };
+    private CustomListAdapter everdata;
+
 
     private SwipeRefreshLayout swipeRefreshLayout;
 
@@ -62,7 +63,13 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         this.view =inflater.inflate(R.layout.fragment2, container, false);
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.reset);
-        swipeRefreshLayout.setOnRefreshListener(this);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Toast.makeText(getActivity(), "on reset", Toast.LENGTH_SHORT).show();
+                onReset();
+            }
+        });
 
         btn_themban=(Button)view.findViewById(R.id.btn_thembann);
 
@@ -73,26 +80,30 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
             }
         });
         database = FirebaseDatabase.getInstance();
-        myRef2 = database.getReference("user");
-        myRef = database.getReference("friend");
+        refuser = database.getReference("user");
+        reffriend = database.getReference("friend");
         mAuth = FirebaseAuth.getInstance();
-        getMyEmail();
-
-        return view;
-    }
-    private void getMyEmail(){
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             myemail = user.getEmail();
+        }else{
+            alert("Có lỗi");
         }
-        final Query getkey = myRef2.orderByChild("email").equalTo(myemail);
+        System.out.println("AAA bắt đầu frag2");
+        cleardata();
+        getMyEmail();
+        return view;
+    }
+    private void getMyEmail(){
+
+        final Query getkey = refuser.orderByChild("email").equalTo(myemail);
         getkey.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
                 DataUser user = dataSnapshot.getValue(DataUser.class);
-
-                queryFriend(user.getKey());
+                mykey=user.getKey();
+                queryFriend(mykey);
             }
 
             @Override
@@ -116,6 +127,111 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
             }
         });
     }
+    private void queryFriend(String mykey){
+        Query friend = reffriend.child(mykey);
+        friend.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                //vòng lặp để lấy dữ liệu khi có sự thay đổi trên Firebase
+                for (DataSnapshot data: dataSnapshot.getChildren())
+                {
+                    //lấy key của dữ liệu
+                    String key=data.getKey();
+                    //lấy giá trị của key (nội dung)
+                    String value=(String)data.getValue();
+                    System.out.println("AAA"+value);
+//                    convertName(value);
+                    listKey.add(value);
+                }
+                readListKey();
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
+            }
+        });
+    }
+    private void readListKey(){
+        System.out.println("AAA listkey:"+listKey);
+        for (String key:listKey) {
+            convertName(key);
+        }
+    }
+    private void convertName(String key2){
+        System.out.println("AAA"+"convert name");
+        System.out.println("AAA key2:"+key2);
+        Query findname = refuser.child(key2);
+        findname.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                System.out.println("AAA co chay vao day khong");
+                //vòng lặp để lấy dữ liệu khi có sự thay đổi trên Firebase
+                for (DataSnapshot data : dataSnapshot.getChildren()) {
+                    System.out.println("AAA data"+data);
+                    if(data.getKey().equals("name")){
+                        System.out.println("AAA kavlue:"+data.getValue());
+
+                    }
+//                    DataUser user = data.getValue(DataUser.class);
+//                    String name = user.getName();
+//                    String emailfriend = user.getEmail();
+//                    emailArray.add(emailfriend);
+//                    nameArray.add(name);
+//                    infoArray.add("test");
+//                    System.out.println("AAA" + name);
+//                    showdatafriend();
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+
+        });
+    }
+
+    private void showdatafriend(){
+        everdata = new CustomListAdapter(getActivity(), nameArray, infoArray, imageArray);
+        listView = (ListView)view.findViewById(R.id.listViewFriend);
+        listView.setAdapter(everdata);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position,
+                                    long id) {
+                Intent intent = new Intent(getActivity(), DetailActivity.class);
+                String message = emailArray.get(position);
+                intent.putExtra("email", message);
+                startActivity(intent);
+            }
+
+        });
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view,
+                                           int position, long id) {
+                final String message = listKey.get(position);
+                String name=nameArray.get(position);
+                AlertDialog.Builder alertDialog=new AlertDialog.Builder(getActivity());
+                alertDialog.setTitle("Xóa "+name+"/n"+message+" khỏi danh sách bạn bè?");
+                alertDialog.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        deletefriend(message);
+                    }
+                });
+                alertDialog.setPositiveButton("cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+                alertDialog.create();
+                alertDialog.show();
+                return true;
+            }
+        });
+    }
+
     private void alertDialog(){
         AlertDialog.Builder alertDialog=new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = frag2.this.getLayoutInflater();
@@ -149,7 +265,6 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
         email.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                System.out.println("AAA ok");
                 if(dataSnapshot.getValue()==null){
                     alert("Không tìm thấy");
                 }else{
@@ -194,10 +309,9 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
 
             }
         });
-
     }
 
-    final void findfriend(final String name, final String email, final String key){
+    final void findfriend(final String email, final String name, final String key){
         AlertDialog.Builder alertDialog=new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = frag2.this.getLayoutInflater();
         View mView = inflater.inflate(R.layout.timthayban, null);
@@ -231,7 +345,6 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
         alertDialog.setNeutralButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-
             }
         });
         alertDialog.setPositiveButton("cancel", new DialogInterface.OnClickListener() {
@@ -243,6 +356,31 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
         alertDialog.create();
         alertDialog.show();
     }
+
+    private void cleardata(){
+        listKey.clear();
+        nameArray.clear();
+        emailArray.clear();
+        infoArray.clear();
+    }
+    private void checkfriend(String email, String key){
+        int i=0;
+        System.out.println("AAA email friend:" +email);
+        for (String x:emailArray) {
+            System.out.println("AAA emailArray:"+x);
+            if(email.equals(x)){
+                i++;
+            }
+        }
+        if(i!=0){
+            alert("Đã có trong danh sách bạn bè");
+        }
+        else if(email.equals(myemail)){
+            Toast.makeText(getActivity(), "Không thể tự kết bạn với bản thân", Toast.LENGTH_SHORT).show();
+        }else{
+            addfriend(key);
+        }
+    }
     private void addfriend(final String keyfriend){
         String myemail="";
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -251,163 +389,69 @@ public class frag2 extends Fragment implements SwipeRefreshLayout.OnRefreshListe
         }else{
             alert("Có lỗi");
         }
-
-        final Query email = myRef2.orderByChild("email").equalTo(myemail);
-        email.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
-                DataUser newPost = dataSnapshot.getValue(DataUser.class);
-                String c=newPost.key;
-                // chọn đến node friend
-                DatabaseReference refFriend = database.getReference("friend");
-                // push len 2 node cua user+friend
-
-                refFriend.child(c).push().setValue(keyfriend);
-                refFriend.child(keyfriend).push().setValue(c);
-                cleardata();
-                reload();
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-            }
-        });
+        // chọn đến node friend
+        // push len 2 node cua user+friend
+        reffriend.child(mykey).push().setValue(keyfriend);
+        //push len node cua friend
+        psuhFriend(keyfriend);
+        System.out.println("AAA ket ban xong, reset");
+        cleardata();
+        getMyEmail();
     }
+    private void psuhFriend(final String keyfriend) {
 
-    private void queryFriend(String key){
-        Query friend = myRef.child(key);
-        friend.addValueEventListener(new ValueEventListener() {
-
+        Query pusfriend = reffriend.child(keyfriend).orderByChild(mykey);
+        pusfriend.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                //vòng lặp để lấy dữ liệu khi có sự thay đổi trên Firebase
-                for (DataSnapshot data: dataSnapshot.getChildren())
-                {
-                    //lấy key của dữ liệu
-                    String key=data.getKey();
-                    //lấy giá trị của key (nội dung)
-                    String value=(String)data.getValue();
-                    System.out.println("AAA"+value);
-                    convertName(value);
-                    listKey.add(value);
-
+                int b = 0;
+                System.out.println("AAA data:" + dataSnapshot);
+                for (DataSnapshot data : dataSnapshot.getChildren()) {
+                    String a = (String) data.getValue();
+                    if (a.equals(mykey)) {
+                        b++;
+                    }
+                }
+                if (b == 0) {
+                    reffriend.child(keyfriend).push().setValue(mykey);
+                    onReset();
+                } else {
+                    System.out.println("AAA"+"Đã có trong list bạn bè");
                 }
             }
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
-            }
-        });
-
-    }
-    private void showdatafriend(){
-        CustomListAdapter whatever = new CustomListAdapter(getActivity(), nameArray, infoArray, imageArray);
-        listView = (ListView)view.findViewById(R.id.listViewFriend);
-        listView.setAdapter(whatever);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position,
-                                    long id) {
-                Intent intent = new Intent(getActivity(), DetailActivity.class);
-                String message = nameArray.get(position);
-                intent.putExtra("email", message);
-                startActivity(intent);
+            public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         });
     }
-    private void convertName(String key2){
-        Query findname = myRef2.orderByChild("key").equalTo(key2);
-        findname.addChildEventListener(new ChildEventListener() {
+    private void deletefriend(final String keydelete){
+        System.out.println("AAA key delete: "+keydelete);
+        Query delete = reffriend.child(mykey).orderByChild(keydelete);
+        delete.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
-                DataUser user = dataSnapshot.getValue(DataUser.class);
-                String name = user.getName();
-                String emailfriend=user.getEmail();
-                emailArray.add(emailfriend);
-                nameArray.add(name);
-                infoArray.add("test");
-                System.out.println("AAA"+name);
-                showdatafriend();
-            }
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-            }
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                System.out.println("AAA data:" +dataSnapshot);
+                for (DataSnapshot data: dataSnapshot.getChildren()){
+                    String a= (String) data.getValue();
+                    if(a.equals(keydelete)){
+                        data.getRef().removeValue();
+                        Toast.makeText(getActivity(), "Đã xóa khỏi danh sách bạn bè", Toast.LENGTH_SHORT).show();
 
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+                    }
+                }
             }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-            }
-
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         });
-        showlistfriend();
+        onReset();
     }
 
-    private void reload() {
-            Intent intent = getActivity().getIntent();
-            startActivity(intent);
-    }
-    private void cleardata(){
-        listKey.clear();
-        nameArray.clear();
-        emailArray.clear();
-    }
-
-    public void onRefresh(){
-        swipeRefreshLayout.setRefreshing(true);
-        refreshList();
-    }
-    private void refreshList(){
-        //do processing to get new data and set your listview's adapter, maybe  reinitialise the loaders you may be using or so
-        //when your data has finished loading, cset the refresh state of the view to false
+    private void onReset(){
         swipeRefreshLayout.setRefreshing(false);
-    }
-    private void showlistfriend(){
-        for (String x:nameArray) {
-            System.out.println("AAA fiend"+x);
-        }
-    }
-    private void checkfriend(String email, String key){
-        String myemail="";
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            myemail = user.getEmail();
-        }else{
-            alert("Có lỗi");
-        }
-        int i=0;
-        for (String x:emailArray) {
-            if(email.equals(x)){
-                i++;
-            }
-        }
-        if(i==0){
-            alert("Đã có trong danh sách bạn bè");
-        }
-        else if(email.equals(myemail)){
-            Toast.makeText(getActivity(), "Không thể tự kết bạn với bản thân", Toast.LENGTH_SHORT).show();
-        }else{
-            addfriend(key);
-        }
+//                Intent intent = new Intent(getActivity(), getContext().getClass());
+//                startActivity(intent);
+        cleardata();
+        getMyEmail();
     }
 }
